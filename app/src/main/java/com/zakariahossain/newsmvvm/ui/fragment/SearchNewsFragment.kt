@@ -67,9 +67,6 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
                     response.data?.let { newsResponse ->
                         newsAdapter.differList.submitList(newsResponse.articles)
                         val size = newsAdapter.differList.currentList.size
-
-                        view.snackBar(size.toString())
-
                         noSearchNews.isVisibleView(size)
                     }
                 }

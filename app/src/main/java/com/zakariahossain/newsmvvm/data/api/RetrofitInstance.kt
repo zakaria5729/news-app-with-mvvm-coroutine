@@ -1,29 +1,36 @@
 package com.zakariahossain.newsmvvm.data.api
 
+import com.zakariahossain.newsmvvm.App
 import com.zakariahossain.newsmvvm.BuildConfig
+import com.zakariahossain.newsmvvm.util.ConnectivityInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RetrofitInstance {
-    companion object {
-        private val retrofit by lazy {
-            val logging = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+object RetrofitInstance {
+    lateinit var appContext: App
 
-            val client = OkHttpClient.Builder()
-                .addInterceptor(logging)
-                .build()
+    fun init(context: App) {
+        this.appContext = context
+    }
 
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(client)
-                .build()
-        }
+    private val retrofit by lazy {
+        val logging = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
 
-        val api by lazy {
-            retrofit.create(NewsApi::class.java)
-        }
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .addInterceptor(ConnectivityInterceptor(appContext))
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build()
+    }
+
+    val api by lazy {
+        retrofit.create(NewsApi::class.java)
     }
 }

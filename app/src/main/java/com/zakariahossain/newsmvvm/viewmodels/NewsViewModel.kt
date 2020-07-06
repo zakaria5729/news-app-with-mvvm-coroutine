@@ -1,15 +1,18 @@
 package com.zakariahossain.newsmvvm.viewmodels
 
+import android.util.Log
+import retrofit2.Response
+import kotlinx.coroutines.launch
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.MutableLiveData
+import com.zakariahossain.newsmvvm.util.Resource.*
+import com.zakariahossain.newsmvvm.util.Resource
 import com.zakariahossain.newsmvvm.models.Article
 import com.zakariahossain.newsmvvm.models.NewsResponse
+import com.zakariahossain.newsmvvm.util.checkError
 import com.zakariahossain.newsmvvm.repositories.NewsRepository
-import com.zakariahossain.newsmvvm.util.Resource
-import kotlinx.coroutines.launch
-import retrofit2.Response
 
 class NewsViewModel(
     private val newsRepository: NewsRepository
@@ -28,18 +31,27 @@ class NewsViewModel(
     }
 
     fun breakingNews(countryCode: String) = viewModelScope.launch {
-        breakingNewsLiveData.postValue(Resource.Loading())
-        val response = newsRepository.getBreakingNews(countryCode, breakingNesPageNumber)
-        breakingNewsLiveData.postValue(handleBreakingNewsResponse(response))
+        breakingNewsLiveData.postValue(Loading())
+        try {
+            val response = newsRepository.getBreakingNews(countryCode, breakingNesPageNumber)
+            breakingNewsLiveData.postValue(handleBreakingNewsResponse(response))
+        } catch (e: Exception) {
+            checkError(e, breakingNewsLiveData)
+        }
     }
 
     fun searchNews(searchQuery: String) = viewModelScope.launch {
-        searchNewsLiveData.postValue(Resource.Loading())
-        val response = newsRepository.searchNews(searchQuery, searchNewsPageNumber)
-        searchNewsLiveData.postValue(handleSearchNewsResponse(response))
+        searchNewsLiveData.postValue(Loading())
+
+        try {
+            val response = newsRepository.searchNews(searchQuery, searchNewsPageNumber)
+            searchNewsLiveData.postValue(handleSearchNewsResponse(response))
+        } catch (e: Exception) {
+            checkError(e, searchNewsLiveData)
+        }
     }
 
-    private fun handleBreakingNewsResponse(response: Response<NewsResponse>) : Resource<NewsResponse> {
+    private fun handleBreakingNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
         if (response.isSuccessful) {
             response.body()?.let { resultResponse ->
                 breakingNesPageNumber++
@@ -47,28 +59,25 @@ class NewsViewModel(
                 if (breakingNewsResponse == null) {
                     breakingNewsResponse = resultResponse
                 } else {
-                    //val oldArticle = breakingNewsResponse?.articles
                     val newArticle = resultResponse.articles
-                    //oldArticle?.addAll(newArticle)
-
                     breakingNewsResponse?.articles?.addAll(newArticle)
                 }
 
-                return Resource.Success(breakingNewsResponse ?: resultResponse)
+                return Success(breakingNewsResponse ?: resultResponse)
             }
         }
 
-        return Resource.Error(response.message())
+        return Error(response.message())
     }
 
-    private fun handleSearchNewsResponse(response: Response<NewsResponse>) : Resource<NewsResponse> {
+    private fun handleSearchNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
         if (response.isSuccessful) {
             response.body()?.let {
-                return Resource.Success(it)
+                return Success(it)
             }
         }
 
-        return Resource.Error(response.message())
+        return Error(response.message())
     }
 
     fun savedArticle(article: Article) = viewModelScope.launch {

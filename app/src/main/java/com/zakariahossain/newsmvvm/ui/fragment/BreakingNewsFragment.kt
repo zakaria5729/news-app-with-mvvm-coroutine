@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AbsListView
-import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -16,8 +15,6 @@ import com.zakariahossain.newsmvvm.ui.activity.NewsActivity
 import com.zakariahossain.newsmvvm.ui.adapters.NewsAdapter
 import com.zakariahossain.newsmvvm.util.*
 import com.zakariahossain.newsmvvm.viewmodels.NewsViewModel
-import kotlinx.android.synthetic.main.activity_news.*
-import kotlinx.android.synthetic.main.fragment_article.*
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
 
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
@@ -103,8 +100,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 viewModel.breakingNews("us")
                 isScrolling = false
             }
-
-
         }
 
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
